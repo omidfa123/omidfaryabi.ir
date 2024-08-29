@@ -16,15 +16,36 @@ async function getUserId(request) {
   return userId
 }
 
+// Helper function to add CORS headers
+function corsHeaders(response) {
+  response.headers.set('Access-Control-Allow-Origin', '*') // Allow all origins
+  response.headers.set(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, DELETE, OPTIONS'
+  )
+  response.headers.set(
+    'Access-Control-Allow-Headers',
+    'X-User-Id, Content-Type'
+  )
+  return response
+}
+
+// OPTIONS: Handle preflight requests
+export async function OPTIONS() {
+  return corsHeaders(new NextResponse(null, { status: 200 }))
+}
+
 // GET: Fetch all todos for a user
 export async function GET(request) {
   const userId = await getUserId(request)
   if (!userId) {
-    return NextResponse.json({ error: 'User ID is required' }, { status: 401 })
+    return corsHeaders(
+      NextResponse.json({ error: 'User ID is required' }, { status: 401 })
+    )
   }
 
   const { rows } = await sql`SELECT * FROM todos WHERE user_id = ${userId}`
-  return NextResponse.json(rows)
+  return corsHeaders(NextResponse.json(rows))
 }
 
 // POST: Create a new todo
@@ -41,9 +62,8 @@ export async function POST(request) {
       RETURNING *
     `
 
-    return NextResponse.json(
-      { todo: rows[0], userId: newUserId },
-      { status: 201 }
+    return corsHeaders(
+      NextResponse.json({ todo: rows[0], userId: newUserId }, { status: 201 })
     )
   } else {
     const { title, description } = await request.json()
@@ -55,7 +75,7 @@ export async function POST(request) {
       RETURNING *
     `
 
-    return NextResponse.json(rows[0], { status: 201 })
+    return corsHeaders(NextResponse.json(rows[0], { status: 201 }))
   }
 }
 
@@ -63,7 +83,9 @@ export async function POST(request) {
 export async function PUT(request) {
   const userId = await getUserId(request)
   if (!userId) {
-    return NextResponse.json({ error: 'User ID is required' }, { status: 401 })
+    return corsHeaders(
+      NextResponse.json({ error: 'User ID is required' }, { status: 401 })
+    )
   }
 
   const { id, title, description, isDone } = await request.json()
@@ -76,20 +98,24 @@ export async function PUT(request) {
   `
 
   if (rows.length === 0) {
-    return NextResponse.json(
-      { error: 'Todo not found or unauthorized' },
-      { status: 404 }
+    return corsHeaders(
+      NextResponse.json(
+        { error: 'Todo not found or unauthorized' },
+        { status: 404 }
+      )
     )
   }
 
-  return NextResponse.json(rows[0])
+  return corsHeaders(NextResponse.json(rows[0]))
 }
 
 // DELETE: Remove a todo
 export async function DELETE(request) {
   const userId = await getUserId(request)
   if (!userId) {
-    return NextResponse.json({ error: 'User ID is required' }, { status: 401 })
+    return corsHeaders(
+      NextResponse.json({ error: 'User ID is required' }, { status: 401 })
+    )
   }
 
   const { id } = await request.json()
@@ -100,11 +126,15 @@ export async function DELETE(request) {
   `
 
   if (rowCount === 0) {
-    return NextResponse.json(
-      { error: 'Todo not found or unauthorized' },
-      { status: 404 }
+    return corsHeaders(
+      NextResponse.json(
+        { error: 'Todo not found or unauthorized' },
+        { status: 404 }
+      )
     )
   }
 
-  return NextResponse.json({ message: 'Todo deleted successfully' })
+  return corsHeaders(
+    NextResponse.json({ message: 'Todo deleted successfully' })
+  )
 }
