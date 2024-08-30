@@ -54,7 +54,11 @@ export async function GET(request) {
     return corsHeaders(NextResponse.json(rows))
   }
 
-  const { rows } = await sql`SELECT * FROM todos WHERE user_id = ${userId}`
+  const { rows } = await sql`
+  SELECT * FROM todos
+  WHERE user_id = ${userId}
+  ORDER BY id
+`
   return corsHeaders(NextResponse.json(rows))
 }
 
