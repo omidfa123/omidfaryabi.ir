@@ -37,11 +37,21 @@ export async function OPTIONS() {
 
 // GET: Fetch all todos for a user
 export async function GET(request) {
+  const searchParams = request.nextUrl.searchParams
+  const id = searchParams.get('id')
+
   const userId = await getUserId(request)
   if (!userId) {
     return corsHeaders(
       NextResponse.json({ error: 'User ID is required' }, { status: 401 })
     )
+  }
+
+  if (id) {
+    const { rows } =
+      await sql`SELECT * FROM todos WHERE id = ${id} AND user_id = ${userId}`
+
+    return corsHeaders(NextResponse.json(rows))
   }
 
   const { rows } = await sql`SELECT * FROM todos WHERE user_id = ${userId}`
