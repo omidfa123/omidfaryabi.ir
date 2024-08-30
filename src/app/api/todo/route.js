@@ -21,7 +21,7 @@ function corsHeaders(response) {
   response.headers.set('Access-Control-Allow-Origin', '*') // Allow all origins
   response.headers.set(
     'Access-Control-Allow-Methods',
-    'GET, POST, PUT, DELETE, OPTIONS'
+    'GET, POST, PUT, PATCH, DELETE, OPTIONS'
   )
   response.headers.set(
     'Access-Control-Allow-Headers',
@@ -55,10 +55,10 @@ export async function GET(request) {
   }
 
   const { rows } = await sql`
-  SELECT * FROM todos
-  WHERE user_id = ${userId}
-  ORDER BY id
-`
+    SELECT * FROM todos
+    WHERE user_id = ${userId}
+    ORDER BY id
+  `
   return corsHeaders(NextResponse.json(rows))
 }
 
@@ -110,6 +110,43 @@ export async function PUT(request) {
     WHERE id = ${id} AND user_id = ${userId}
     RETURNING *
   `
+
+  if (rows.length === 0) {
+    return corsHeaders(
+      NextResponse.json(
+        { error: 'Todo not found or unauthorized' },
+        { status: 404 }
+      )
+    )
+  }
+
+  return corsHeaders(NextResponse.json(rows[0]))
+}
+
+// PATCH: Update specific fields of a todo
+export async function PATCH(request) {
+  const userId = await getUserId(request)
+  if (!userId) {
+    return corsHeaders(
+      NextResponse.json({ error: 'User ID is required' }, { status: 401 })
+    )
+  }
+
+  const { id, ...updateFields } = await request.json()
+
+  // Construct the dynamic SQL query
+  let updateQuery = 'UPDATE todos SET '
+  const updateValues = []
+  Object.entries(updateFields).forEach(([key, value], index) => {
+    updateQuery += `${key} = $${index + 1}, `
+    updateValues.push(value)
+  })
+  updateQuery = updateQuery.slice(0, -2) // Remove the trailing comma and space
+  updateQuery += ` WHERE id = $${updateValues.length + 1} AND user_id = $${
+    updateValues.length + 2
+  } RETURNING *`
+
+  const { rows } = await sql.query(updateQuery, [...updateValues, id, userId])
 
   if (rows.length === 0) {
     return corsHeaders(
