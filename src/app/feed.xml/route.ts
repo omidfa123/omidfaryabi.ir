@@ -1,8 +1,14 @@
+import assert from 'assert'
 import * as cheerio from 'cheerio'
 import { Feed } from 'feed'
 
-export async function GET(req) {
+export async function GET(req: Request) {
   let siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+
+  if (!siteUrl) {
+    throw Error('Missing NEXT_PUBLIC_SITE_URL environment variable')
+  }
+
   let author = {
     name: 'Spencer Sharp',
     email: 'spencer@planetaria.tech',
@@ -38,6 +44,10 @@ export async function GET(req) {
     let title = article.find('h1').first().text()
     let date = article.find('time').first().attr('datetime')
     let content = article.find('[data-mdx-content]').first().html()
+
+    assert(typeof title === 'string')
+    assert(typeof date === 'string')
+    assert(typeof content === 'string')
 
     feed.addItem({
       title,
