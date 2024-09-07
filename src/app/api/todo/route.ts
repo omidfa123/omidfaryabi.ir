@@ -1,6 +1,7 @@
 import { sql } from '@vercel/postgres'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
+import { corsHeaders } from '@/lib/cors'
 
 // Helper function to generate a user ID
 function generateUserId() {
@@ -14,20 +15,6 @@ async function getUserId(request: NextRequest) {
     return null
   }
   return userId
-}
-
-// Helper function to add CORS headers
-function corsHeaders(response: NextResponse) {
-  response.headers.set('Access-Control-Allow-Origin', '*') // Allow all origins
-  response.headers.set(
-    'Access-Control-Allow-Methods',
-    'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-  )
-  response.headers.set(
-    'Access-Control-Allow-Headers',
-    'X-User-Id, Content-Type',
-  )
-  return response
 }
 
 // OPTIONS: Handle preflight requests
