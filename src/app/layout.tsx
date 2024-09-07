@@ -1,3 +1,5 @@
+import { type Metadata } from 'next'
+
 import { Providers } from '@/app/providers'
 import { Layout } from '@/components/Layout'
 
@@ -16,9 +18,13 @@ export const metadata = {
       'application/rss+xml': `${process.env.NEXT_PUBLIC_SITE_URL}/feed.xml`,
     },
   },
-}
+} satisfies Metadata
 
-export default function RootLayout({ children }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <body className="flex h-full bg-zinc-50 dark:bg-black">

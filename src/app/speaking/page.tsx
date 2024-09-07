@@ -1,8 +1,13 @@
+import { type Metadata } from 'next'
+
 import { Card } from '@/components/Card'
 import { Section } from '@/components/Section'
 import { SimpleLayout } from '@/components/SimpleLayout'
 
-function SpeakingSection({ children, ...props }) {
+function SpeakingSection({
+  children,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof Section>) {
   return (
     <Section {...props}>
       <div className="space-y-16">{children}</div>
@@ -10,7 +15,19 @@ function SpeakingSection({ children, ...props }) {
   )
 }
 
-function Appearance({ title, description, event, cta, href }) {
+function Appearance({
+  title,
+  description,
+  event,
+  cta,
+  href,
+}: {
+  title: string
+  description: string
+  event: string
+  cta: string
+  href: string
+}) {
   return (
     <Card as="article">
       <Card.Title as="h3" href={href}>
@@ -23,7 +40,7 @@ function Appearance({ title, description, event, cta, href }) {
   )
 }
 
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Speaking',
   description:
     'I’ve spoken at events all around the world and been interviewed for many podcasts.',

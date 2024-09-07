@@ -1,5 +1,5 @@
 import { sql } from '@vercel/postgres'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
 // Helper function to generate a user ID
@@ -8,7 +8,7 @@ function generateUserId() {
 }
 
 // Middleware to check for user ID
-async function getUserId(request) {
+async function getUserId(request: NextRequest) {
   const userId = request.headers.get('X-User-Id')
   if (!userId) {
     return null
@@ -17,15 +17,15 @@ async function getUserId(request) {
 }
 
 // Helper function to add CORS headers
-function corsHeaders(response) {
+function corsHeaders(response: NextResponse) {
   response.headers.set('Access-Control-Allow-Origin', '*') // Allow all origins
   response.headers.set(
     'Access-Control-Allow-Methods',
-    'GET, POST, PUT, PATCH, DELETE, OPTIONS'
+    'GET, POST, PUT, PATCH, DELETE, OPTIONS',
   )
   response.headers.set(
     'Access-Control-Allow-Headers',
-    'X-User-Id, Content-Type'
+    'X-User-Id, Content-Type',
   )
   return response
 }
@@ -36,14 +36,14 @@ export async function OPTIONS() {
 }
 
 // GET: Fetch all todos for a user
-export async function GET(request) {
+export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const id = searchParams.get('id')
 
   const userId = await getUserId(request)
   if (!userId) {
     return corsHeaders(
-      NextResponse.json({ error: 'User ID is required' }, { status: 401 })
+      NextResponse.json({ error: 'User ID is required' }, { status: 401 }),
     )
   }
 
@@ -63,7 +63,7 @@ export async function GET(request) {
 }
 
 // POST: Create a new todo
-export async function POST(request) {
+export async function POST(request: NextRequest) {
   const userId = await getUserId(request)
   if (!userId) {
     const newUserId = generateUserId()
@@ -77,7 +77,7 @@ export async function POST(request) {
     `
 
     return corsHeaders(
-      NextResponse.json({ todo: rows[0], userId: newUserId }, { status: 201 })
+      NextResponse.json({ todo: rows[0], userId: newUserId }, { status: 201 }),
     )
   } else {
     const { title, description } = await request.json()
@@ -94,11 +94,11 @@ export async function POST(request) {
 }
 
 // PUT: Update a todo
-export async function PUT(request) {
+export async function PUT(request: NextRequest) {
   const userId = await getUserId(request)
   if (!userId) {
     return corsHeaders(
-      NextResponse.json({ error: 'User ID is required' }, { status: 401 })
+      NextResponse.json({ error: 'User ID is required' }, { status: 401 }),
     )
   }
 
@@ -115,8 +115,8 @@ export async function PUT(request) {
     return corsHeaders(
       NextResponse.json(
         { error: 'Todo not found or unauthorized' },
-        { status: 404 }
-      )
+        { status: 404 },
+      ),
     )
   }
 
@@ -124,11 +124,11 @@ export async function PUT(request) {
 }
 
 // PATCH: Update specific fields of a todo
-export async function PATCH(request) {
+export async function PATCH(request: NextRequest) {
   const userId = await getUserId(request)
   if (!userId) {
     return corsHeaders(
-      NextResponse.json({ error: 'User ID is required' }, { status: 401 })
+      NextResponse.json({ error: 'User ID is required' }, { status: 401 }),
     )
   }
 
@@ -136,7 +136,7 @@ export async function PATCH(request) {
 
   // Construct the dynamic SQL query
   let updateQuery = 'UPDATE todos SET '
-  const updateValues = []
+  const updateValues: any[] = []
   Object.entries(updateFields).forEach(([key, value], index) => {
     updateQuery += `${key} = $${index + 1}, `
     updateValues.push(value)
@@ -152,8 +152,8 @@ export async function PATCH(request) {
     return corsHeaders(
       NextResponse.json(
         { error: 'Todo not found or unauthorized' },
-        { status: 404 }
-      )
+        { status: 404 },
+      ),
     )
   }
 
@@ -161,11 +161,11 @@ export async function PATCH(request) {
 }
 
 // DELETE: Remove a todo
-export async function DELETE(request) {
+export async function DELETE(request: NextRequest) {
   const userId = await getUserId(request)
   if (!userId) {
     return corsHeaders(
-      NextResponse.json({ error: 'User ID is required' }, { status: 401 })
+      NextResponse.json({ error: 'User ID is required' }, { status: 401 }),
     )
   }
 
@@ -180,12 +180,12 @@ export async function DELETE(request) {
     return corsHeaders(
       NextResponse.json(
         { error: 'Todo not found or unauthorized' },
-        { status: 404 }
-      )
+        { status: 404 },
+      ),
     )
   }
 
   return corsHeaders(
-    NextResponse.json({ message: 'Todo deleted successfully' })
+    NextResponse.json({ message: 'Todo deleted successfully' }),
   )
 }
