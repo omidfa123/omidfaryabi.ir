@@ -22,6 +22,7 @@ import image5 from '@/images/photos/image-5.jpg'
 import { type ArticleWithSlug, getAllArticles } from '@/lib/articles'
 import { formatDate } from '@/lib/formatDate'
 import { Newsletter } from '@/components/Newsletter'
+import { TouchScrollGallery } from '@/components/TouchScrollGallery'
 
 function BriefcaseIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
@@ -188,58 +189,30 @@ function Resume() {
 }
 
 function Photos() {
-  let rotations = ['rotate-2', '-rotate-2', 'rotate-2', 'rotate-2', '-rotate-2']
-  let projectLinks = [
+  const rotations = ['rotate-2', '-rotate-2', 'rotate-2', 'rotate-2', '-rotate-2']
+  const projectLinks = [
     'https://farm.maj.ir/',
     'https://artamart.vercel.app/',
     'https://farm.maj.ir/',
     'https://off-land2.vercel.app/',
     'https://bazaro.ir/'
   ]
-  let projectNames = [
+  const projectNames = [
     'Farm.maj.ir - Agricultural Management System',
     'ArtaMart - E-commerce Platform',
     'Farm.maj.ir - Agricultural Management System',
     'OffLand - Technology E-commerce',
     'Bazaro - Local Marketplace'
   ]
+  const images = [image1, image2, image3, image4, image5]
 
   return (
-    <div className="mt-16 sm:mt-20">
-      <div className="-my-4 flex justify-center gap-5 overflow-hidden py-4 sm:gap-8">
-        {[image1, image2, image3, image4, image5].map((image, imageIndex) => (
-          <Link
-            key={image.src}
-            href={projectLinks[imageIndex]}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={clsx(
-              'group relative aspect-[9/10] w-44 flex-none overflow-hidden rounded-xl bg-zinc-100 sm:w-72 sm:rounded-2xl dark:bg-zinc-800 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer',
-              rotations[imageIndex % rotations.length],
-            )}
-            title={projectNames[imageIndex]}
-          >
-            <Image
-              src={image}
-              alt={projectNames[imageIndex]}
-              sizes="(min-width: 640px) 18rem, 11rem"
-              className="absolute inset-0 h-full w-full object-cover transition-all duration-300 group-hover:brightness-75 group-hover:contrast-105"
-            />
-            <div className="absolute inset-0 bg-black/0 transition-all duration-300 group-hover:bg-black/40" />
-            
-            {/* Hover overlay with text */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-              <div className="text-center">
-                <div className="bg-white/90 dark:bg-zinc-800/90 px-4 py-2 rounded-lg shadow-lg backdrop-blur-sm border border-white/20 dark:border-zinc-700/50">
-                  <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Visit Website</p>
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">Click to open</p>
-                </div>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-    </div>
+    <TouchScrollGallery
+      images={images}
+      projectLinks={projectLinks}
+      projectNames={projectNames}
+      rotations={rotations}
+    />
   )
 }
 
