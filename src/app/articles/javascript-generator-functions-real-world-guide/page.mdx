@@ -1,0 +1,350 @@
+import { ArticleLayout } from '@/components/ArticleLayout'
+
+export const article = {
+  author: 'Omid Faryabi',
+  date: '2025-09-21',
+  title: 'JavaScript Generator Functions: A Comprehensive Real-World Guide',
+  description:
+    'Explore the power of JavaScript generator functions with practical examples, real-world use cases, and advanced patterns that will transform how you handle iterators, async operations, and data streams.',
+}
+
+export const metadata = {
+  title: article.title,
+  description: article.description,
+}
+
+export default (props) => <ArticleLayout article={article} {...props} />
+
+As a frontend developer who has worked on applications serving millions of users, I've discovered that generator functions are one of JavaScript's most underutilized yet powerful features. They've helped me solve complex problems in data processing, API pagination, and state management that would otherwise require significantly more complex solutions.
+
+In this guide, I'll share practical examples from real projects, showing you exactly when and how to use generators effectively in your applications.
+
+## What Are Generator Functions?
+
+Generator functions are special functions that can pause and resume their execution. Unlike regular functions that run to completion, generators can yield values multiple times and maintain their internal state between calls.
+
+Here's a practical example from a recent project where I needed to process large datasets:
+
+```javascript
+// Processing user data in chunks to avoid memory issues
+function* processUsers(users) {
+  console.log(`Starting to process ${users.length} users`);
+  
+  for (let i = 0; i < users.length; i++) {
+    const user = users[i];
+    const processedUser = {
+      ...user,
+      fullName: `${user.firstName} ${user.lastName}`,
+      isActive: user.lastLogin > Date.now() - 30 * 24 * 60 * 60 * 1000
+    };
+    
+    console.log(`Processed user ${i + 1}/${users.length}`);
+    yield processedUser;
+  }
+  
+  console.log('All users processed!');
+}
+
+// Usage in a real application
+const users = await fetchUsersFromAPI();
+const processor = processUsers(users);
+
+for (const processedUser of processor) {
+  await saveToDatabase(processedUser);
+  // Process one user at a time, allowing for progress updates
+}
+```
+
+This approach prevented memory overflow when processing thousands of user records in our Ba-Energy.ir application.
+
+## Real-World Use Case: API Pagination
+
+One of the most practical applications I've found for generators is handling paginated API responses. Instead of loading all data at once, generators let you fetch and process data incrementally.
+
+Here's how I implemented this for the Farm.maj.ir agricultural management system:
+
+```javascript
+// Generator for paginated API calls
+async function* fetchPaginatedFarmers(baseUrl, filters = {}) {
+  let page = 1;
+  let hasMore = true;
+  
+  while (hasMore) {
+    try {
+      const params = new URLSearchParams({
+        ...filters,
+        page: page.toString(),
+        limit: '50'
+      });
+      
+      const response = await fetch(`${baseUrl}/farmers?${params}`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(`API Error: ${data.message}`);
+      }
+      
+      // Yield each farmer individually
+      for (const farmer of data.farmers) {
+        yield {
+          ...farmer,
+          fetchedAt: new Date(),
+          page: page
+        };
+      }
+      
+      hasMore = data.farmers.length === 50;
+      page++;
+      
+      // Add delay to respect rate limits
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+    } catch (error) {
+      console.error(`Failed to fetch page ${page}:`, error);
+      break;
+    }
+  }
+}
+
+// Usage in React component
+const FarmersListComponent = () => {
+  const [farmers, setFarmers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  
+  const loadFarmers = async () => {
+    setLoading(true);
+    const farmerGenerator = fetchPaginatedFarmers('/api/v1', {
+      region: 'north',
+      status: 'active'
+    });
+    
+    for await (const farmer of farmerGenerator) {
+      setFarmers(prev => [...prev, farmer]);
+      // UI updates in real-time as each farmer loads
+    }
+    
+    setLoading(false);
+  };
+  
+  return (
+    <div>
+      {farmers.map(farmer => (
+        <FarmerCard key={farmer.id} farmer={farmer} />
+      ))}
+      {loading && <LoadingSpinner />}
+    </div>
+  );
+};
+```
+
+This generator approach gave us several advantages:
+- **Memory efficient**: Never loads all farmers at once
+- **Real-time updates**: UI updates as each page loads
+- **Error resilient**: Continues processing even if one page fails
+- **Rate limit friendly**: Built-in delays between requests
+
+## E-Commerce Cart Processing
+
+While working on the RixoShop e-commerce platform, I used generators to handle complex cart calculations that needed to be processed step-by-step:
+
+```javascript
+// Generator for processing cart items with complex pricing rules
+function* processCartItems(cartItems, discountCodes, userTier) {
+  let subtotal = 0;
+  let totalDiscount = 0;
+  
+  for (const item of cartItems) {
+    // Calculate base price
+    let itemPrice = item.price * item.quantity;
+    
+    // Apply quantity discounts
+    if (item.quantity >= 10) {
+      itemPrice *= 0.9; // 10% bulk discount
+    }
+    
+    // Apply user tier pricing
+    switch (userTier) {
+      case 'premium':
+        itemPrice *= 0.95;
+        break;
+      case 'vip':
+        itemPrice *= 0.9;
+        break;
+    }
+    
+    subtotal += itemPrice;
+    
+    yield {
+      item,
+      calculatedPrice: itemPrice,
+      runningSubtotal: subtotal,
+      step: `Processed ${item.name}`
+    };
+  }
+  
+  // Apply discount codes
+  for (const code of discountCodes) {
+    const discount = await validateAndApplyDiscount(code, subtotal);
+    if (discount.valid) {
+      totalDiscount += discount.amount;
+      subtotal -= discount.amount;
+      
+      yield {
+        type: 'discount',
+        code: code,
+        amount: discount.amount,
+        newSubtotal: subtotal,
+        step: `Applied discount code: ${code}`
+      };
+    }
+  }
+  
+  // Calculate tax
+  const tax = subtotal * 0.08;
+  const total = subtotal + tax;
+  
+  yield {
+    type: 'final',
+    subtotal,
+    tax,
+    totalDiscount,
+    total,
+    step: 'Calculation complete'
+  };
+}
+
+// Usage in checkout component
+const CheckoutSummary = ({ cart, discountCodes, user }) => {
+  const [calculations, setCalculations] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  const processCart = async () => {
+    setIsProcessing(true);
+    setCalculations([]);
+    
+    const processor = processCartItems(cart.items, discountCodes, user.tier);
+    
+    for await (const step of processor) {
+      setCalculations(prev => [...prev, step]);
+      // Show each calculation step to user
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+    
+    setIsProcessing(false);
+  };
+  
+  return (
+    <div className="checkout-summary">
+      {calculations.map((calc, index) => (
+        <div key={index} className="calculation-step">
+          {calc.step}
+        </div>
+      ))}
+      {isProcessing && <div>Processing...</div>}
+    </div>
+  );
+};
+```
+
+## File Upload Progress Tracking
+
+For Ba-Energy.ir's document upload feature, I used generators to track upload progress in real-time:
+
+```javascript
+// Generator for handling file uploads with progress tracking
+async function* uploadFiles(files, endpoint) {
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    
+    yield {
+      status: 'starting',
+      fileName: file.name,
+      fileIndex: i + 1,
+      totalFiles: files.length
+    };
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: formData
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        yield {
+          status: 'completed',
+          fileName: file.name,
+          fileIndex: i + 1,
+          totalFiles: files.length,
+          uploadedUrl: result.url
+        };
+      } else {
+        throw new Error(result.message);
+      }
+      
+    } catch (error) {
+      yield {
+        status: 'error',
+        fileName: file.name,
+        fileIndex: i + 1,
+        totalFiles: files.length,
+        error: error.message
+      };
+    }
+  }
+  
+  yield {
+    status: 'all_complete',
+    totalFiles: files.length
+  };
+}
+```
+
+## When to Use Generator Functions
+
+Based on my experience building applications for millions of users, generators work best for:
+
+1. **Large dataset processing** - When you need to handle data that might not fit in memory
+2. **API pagination** - Fetching data page by page without blocking the UI
+3. **Progress tracking** - When you need to show step-by-step progress to users
+4. **Complex calculations** - Breaking down heavy computations into manageable chunks
+
+## Performance Tips
+
+Generators add a small overhead compared to regular functions, but the memory savings usually outweigh this cost:
+
+```javascript
+// ❌ Memory inefficient
+const processAllData = (data) => {
+  return data.map(transformItem).filter(isValid);
+};
+
+// ✅ Memory efficient with generators
+function* processDataStream(data) {
+  for (const item of data) {
+    const transformed = transformItem(item);
+    if (isValid(transformed)) {
+      yield transformed;
+    }
+  }
+}
+```
+
+## Conclusion
+
+Generator functions have become an essential part of my development toolkit. They've helped me build more efficient, user-friendly applications by:
+
+- **Reducing memory usage** in data-heavy applications like Ba-Energy.ir
+- **Improving user experience** with real-time progress updates
+- **Simplifying complex async workflows** in agricultural management systems
+- **Making code more maintainable** by breaking complex operations into steps
+
+While generators aren't needed for every use case, they're incredibly powerful when you need to process large amounts of data, handle complex async operations, or provide detailed progress feedback to users.
+
+Start small with simple use cases like pagination, then gradually explore more advanced patterns as you become comfortable with the syntax. Your users (and your server's memory) will thank you for it.
+
+Have you used generators in your projects? I'd love to hear about your experiences and use cases. Feel free to reach out and share your stories!

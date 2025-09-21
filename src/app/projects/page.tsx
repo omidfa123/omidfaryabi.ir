@@ -3,47 +3,72 @@ import Image from 'next/image'
 
 import { Card } from '@/components/Card'
 import { SimpleLayout } from '@/components/SimpleLayout'
-import logoAnimaginary from '@/images/logos/animaginary.svg'
-import logoCosmos from '@/images/logos/cosmos.svg'
-import logoHelioStream from '@/images/logos/helio-stream.svg'
-import logoOpenShuttle from '@/images/logos/open-shuttle.svg'
-import logoPlanetaria from '@/images/logos/planetaria.svg'
+import logoNilva from '@/images/logos/nilva.png'
+import logoRixo from '@/images/logos/rixo-shop.svg'
 
 const projects = [
   {
-    name: 'Planetaria',
+    name: 'Ba-Energy.ir',
     description:
-      'Creating technology to empower civilians to explore space on their own terms.',
-    link: { href: 'http://planetaria.tech', label: 'planetaria.tech' },
-    logo: logoPlanetaria,
+      'Large-scale Next.js application serving 5 million users, promoting energy conservation. Implemented Next.js App Router and server components for enhanced performance.',
+    link: { href: 'https://ba-energy.ir', label: 'ba-energy.ir' },
+    logo: logoNilva,
   },
   {
-    name: 'Animaginary',
+    name: 'Farm.maj.ir',
     description:
-      'High performance web animation library, hand-written in optimized WASM.',
-    link: { href: '#', label: 'github.com' },
-    logo: logoAnimaginary,
+      'Agricultural contract management system with admin dashboard for government-farmer interactions. Built with Next.js and modern state management.',
+    link: { href: 'https://farm.maj.ir', label: 'farm.maj.ir' },
+    logo: logoNilva,
   },
   {
-    name: 'HelioStream',
+    name: 'ArtaMart E-commerce',
     description:
-      'Real-time video streaming library, optimized for interstellar transmission.',
-    link: { href: '#', label: 'github.com' },
-    logo: logoHelioStream,
+      'Modern e-commerce platform built with Next.js and React. Features product catalog, shopping cart, user authentication, and payment integration.',
+    link: { href: 'https://artamart.vercel.app', label: 'artamart.vercel.app' },
+    logo: logoRixo,
   },
   {
-    name: 'cosmOS',
+    name: 'OffLand Technology Store',
     description:
-      'The operating system that powers our Planetaria space shuttles.',
-    link: { href: '#', label: 'github.com' },
-    logo: logoCosmos,
+      'Tech e-commerce website specializing in electronics and gadgets. Built with Next.js featuring responsive design and modern UI components.',
+    link: { href: 'https://off-land2.vercel.app', label: 'off-land2.vercel.app' },
+    logo: logoRixo,
   },
   {
-    name: 'OpenShuttle',
+    name: 'RixoShop Platform',
     description:
-      'The schematics for the first rocket I designed that successfully made it to orbit.',
-    link: { href: '#', label: 'github.com' },
-    logo: logoOpenShuttle,
+      'Complete e-commerce solution with advanced features including inventory management, order tracking, and customer dashboard. Built with modern React patterns.',
+    link: { href: 'https://rixoshop.vercel.app', label: 'rixoshop.vercel.app' },
+    logo: logoRixo,
+  },
+  {
+    name: 'Interactive Quiz Application',
+    description:
+      'Dynamic quiz platform with real-time scoring, multiple choice questions, and progress tracking. Features responsive design and smooth animations.',
+    link: { href: 'https://quizapp-silk.vercel.app', label: 'quizapp-silk.vercel.app' },
+    logo: logoNilva,
+  },
+  {
+    name: 'Restaurant Management System',
+    description:
+      'Full-featured restaurant website with menu management, online ordering, and reservation system. Built with modern web technologies for optimal performance.',
+    link: { href: 'https://restaurant-rho-eight.vercel.app/Index.html', label: 'restaurant-rho-eight.vercel.app' },
+    logo: logoNilva,
+  },
+  {
+    name: 'Progressive Web App',
+    description:
+      'Advanced PWA demonstrating offline functionality, push notifications, and app-like experience. Showcases modern web capabilities and service worker implementation.',
+    link: { href: 'https://pwa-chi-vert.vercel.app', label: 'pwa-chi-vert.vercel.app' },
+    logo: logoNilva,
+  },
+  {
+    name: 'Task Management App',
+    description:
+      'Feature-rich todo application with drag-and-drop functionality, categories, due dates, and progress tracking. Built with React and modern state management.',
+    link: { href: 'https://todo-rho-topaz.vercel.app', label: 'todo-rho-topaz.vercel.app' },
+    logo: logoNilva,
   },
 ]
 
@@ -60,37 +85,41 @@ function LinkIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
 
 export const metadata: Metadata = {
   title: 'Projects',
-  description: 'Things I’ve made trying to put my dent in the universe.',
+  description: 'Comprehensive portfolio of frontend projects including Ba-Energy.ir (5M users), e-commerce platforms, PWAs, and interactive web applications built with Next.js and React.',
 }
 
 export default function Projects() {
   return (
     <SimpleLayout
-      title="Things I’ve made trying to put my dent in the universe."
-      intro="I’ve worked on tons of little projects over the years but these are the ones that I’m most proud of. Many of them are open-source, so if you see something that piques your interest, check out the code and contribute if you have ideas for how it can be improved."
+      title="Frontend projects showcasing modern web development expertise."
+      intro="A comprehensive collection of projects I've built using Next.js, React, and modern web technologies. From large-scale applications serving millions of users to innovative e-commerce solutions and interactive web apps, each project demonstrates different aspects of frontend development and user experience design."
     >
       <ul
         role="list"
-        className="grid grid-cols-1 gap-x-12 gap-y-16 sm:grid-cols-2 lg:grid-cols-3"
+        className="grid grid-cols-1 gap-x-12 gap-y-16 sm:grid-cols-2 lg:grid-cols-3 items-stretch"
       >
         {projects.map((project) => (
-          <Card as="li" key={project.name}>
-            <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
-              <Image
-                src={project.logo}
-                alt=""
-                className="h-8 w-8"
-                unoptimized
-              />
+          <Card as="li" key={project.name} className="h-full">
+            <div className="flex flex-col h-full">
+              <div className="relative z-10 flex h-12 w-12 items-center justify-center rounded-full bg-white shadow-md shadow-zinc-800/5 ring-1 ring-zinc-900/5 dark:border dark:border-zinc-700/50 dark:bg-zinc-800 dark:ring-0">
+                <Image
+                  src={project.logo}
+                  alt=""
+                  className="h-8 w-8"
+                  unoptimized
+                />
+              </div>
+              <h2 className="mt-6 text-base font-semibold text-zinc-800 dark:text-zinc-100">
+                <Card.Link href={project.link.href}>{project.name}</Card.Link>
+              </h2>
+              <div className="flex-1">
+                <Card.Description>{project.description}</Card.Description>
+              </div>
+              <p className="relative z-10 mt-6 flex text-sm font-medium text-zinc-400 transition group-hover:text-teal-500 dark:text-zinc-200">
+                <LinkIcon className="h-6 w-6 flex-none" />
+                <span className="ml-2">{project.link.label}</span>
+              </p>
             </div>
-            <h2 className="mt-6 text-base font-semibold text-zinc-800 dark:text-zinc-100">
-              <Card.Link href={project.link.href}>{project.name}</Card.Link>
-            </h2>
-            <Card.Description>{project.description}</Card.Description>
-            <p className="relative z-10 mt-6 flex text-sm font-medium text-zinc-400 transition group-hover:text-teal-500 dark:text-zinc-200">
-              <LinkIcon className="h-6 w-6 flex-none" />
-              <span className="ml-2">{project.link.label}</span>
-            </p>
           </Card>
         ))}
       </ul>
