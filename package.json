@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "engines": {
-    "node": ">=18.17.0"
+    "node": ">=22.18.0"
   },
   "browserslist": "defaults, not ie <= 11",
   "dependencies": {
