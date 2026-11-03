@@ -58,7 +58,9 @@ export function generateMetadata({
     description: meta.description,
     keywords: [
       'Frontend Developer',
-      'Technical Team Lead',
+      'Full-Stack Engineer',
+      'Solutions Lead',
+      'Oracle',
       'React Developer',
       'Next.js Developer',
       'TypeScript',

@@ -2,9 +2,9 @@ const en = {
   meta: {
     siteName: 'Omid Faryabi',
     titleTemplate: '%s - Omid Faryabi',
-    defaultTitle: 'Omid Faryabi - Frontend Developer & Technical Team Lead',
+    defaultTitle: 'Omid Faryabi - Full-Stack Engineer & Solutions Lead',
     description:
-      'Frontend Developer with 3+ years experience building scalable web applications. Technical Team Lead at Nilva, mentor at MaktabSharif. Contributed to Ba-Energy.ir serving 5M users.',
+      'Full-Stack Engineer & Solutions Lead at Nilva: from customer requirements to frontend, backend and Oracle databases. Leads a team of 4 developers, mentor at MaktabSharif. Contributed to Ba-Energy.ir serving 5M users.',
     ogLocale: 'en_US',
   },
   nav: {
@@ -38,9 +38,9 @@ const en = {
     titleBefore: 'I build interfaces that',
     titleAccent: 'millions of people',
     titleAfter: 'rely on.',
-    role: 'Frontend Developer & Technical Team Lead at Nilva',
+    role: 'Full-Stack Engineer & Solutions Lead at Nilva',
     intro:
-      "I'm a passionate frontend developer with 3+ years of experience building scalable web applications. Based in Tehran, I have a proven track record of leading development teams and mentoring over 200 junior developers. I've contributed to applications serving millions of users, including Ba-Energy.ir with 5M users, while maintaining high code quality and performance standards.",
+      "I'm a software engineer with 3+ years of experience, based in Tehran. I started at Nilva as a junior frontend developer and grew into a full-stack role: today I work directly with customers to understand what they need, then build it end to end, across the frontend, the backend and Oracle databases, while leading a team of 4 developers. I've contributed to applications serving millions of users, including Ba-Energy.ir with 5M users, and mentored over 200 junior developers.",
     ctaProjects: 'See my work',
     ctaContact: 'Get in touch',
     scroll: 'Scroll',
@@ -54,7 +54,7 @@ const en = {
     date: 'Date',
     until: 'until',
     roles: [
-      { company: 'Nilva', title: 'Technical Team Lead (Frontend)' },
+      { company: 'Nilva', title: 'Full-Stack Engineer & Solutions Lead' },
       { company: 'Maktab Sharif', title: 'Mentor & Frontend Instructor' },
       { company: 'RixoShop', title: 'Frontend Developer (Remote)' },
     ],
@@ -97,19 +97,19 @@ const en = {
   about: {
     metaTitle: 'About',
     metaDescription:
-      "I'm Omid Faryabi, a passionate frontend developer with 3+ years of experience. Technical Team Lead at Nilva, mentor at MaktabSharif, contributed to Ba-Energy.ir serving 5M users.",
+      "I'm Omid Faryabi, Full-Stack Engineer & Solutions Lead at Nilva with 3+ years of experience, leading a team of 4 developers. Mentor at MaktabSharif, contributed to Ba-Energy.ir serving 5M users.",
     title:
-      "I'm Omid Faryabi. I live in Tehran, Iran, where I lead frontend development teams.",
+      "I'm Omid Faryabi. I live in Tehran, Iran, where I turn customer needs into working software and lead a team of developers.",
     // Paragraphs are split into plain/bold parts so both languages can keep
     // the emphasis in the right place.
     paragraphs: [
       [
-        "I'm a passionate frontend developer with 3+ years of experience building scalable web applications. Born in 1999, I've dedicated myself to mastering modern web technologies and sharing knowledge with others. My journey has taken me from individual contributor to Technical Team Lead, where I now guide development teams and architecture decisions.",
+        "I'm a passionate frontend developer with 3+ years of experience building scalable web applications. Born in 1999, I've dedicated myself to mastering modern web technologies and sharing knowledge with others. At Nilva my journey has taken me from junior frontend developer to frontend team lead, and on to a full-stack role where I own features from the first customer conversation to production.",
       ],
       [
         'At ',
         { strong: 'Nilva' },
-        ", I serve as Technical Team Lead (Frontend), where I've led a cross-functional team of 3 developers for over a year, delivering enterprise-level frontend solutions. I contributed to ",
+        ", I started as a junior frontend developer in 2023, grew into frontend developer and then frontend team lead, and today I work as Full-Stack Engineer & Solutions Lead, still leading a team of 4 developers. I meet with customers to understand their needs and turn them into solutions, implement them across the frontend and backend, and work with Oracle databases: writing queries and APIs, migrating data and optimizing query plans. I also write the documentation and analyze how our users use the product. I contributed to ",
         { strong: 'Ba-Energy.ir' },
         ', a large-scale Next.js application serving 5 million users, promoting energy conservation. I implemented Next.js App Router and server components, significantly enhancing application performance and user experience.',
       ],
@@ -197,7 +197,7 @@ const en = {
       'Frontend technologies, development tools, and software I use to build exceptional web applications.',
     title: 'My Professional Tech Stack and Development Tools',
     intro:
-      "As a Frontend Lead Developer, I rely on a carefully selected set of technologies and tools to build scalable, high-performance web applications. Here's an overview of what I use daily in my development workflow.",
+      "As a full-stack engineer, I rely on a carefully selected set of technologies and tools to build scalable, high-performance web applications. Here's an overview of what I use daily in my development workflow.",
     sections: [
       {
         title: 'Frontend Technologies',
@@ -347,7 +347,7 @@ const en = {
       'Teaching, mentoring and team leadership: how I help frontend developers grow, from Maktab Sharif classrooms to my team at Nilva.',
     title: 'Helping developers grow is the part of my work I enjoy most.',
     intro:
-      "Since 2022 I've been teaching frontend development at Maktab Sharif, and at Nilva I lead and mentor a frontend team every day. Here's how I share what I've learned, and how we can work together.",
+      "Since 2022 I've been teaching frontend development at Maktab Sharif, and at Nilva I lead and mentor a team of 4 developers every day. Here's how I share what I've learned, and how we can work together.",
     sections: [
       {
         title: 'Teaching',
@@ -366,10 +366,10 @@ const en = {
         title: 'Team leadership',
         items: [
           {
-            title: 'Technical Team Lead (Frontend) at Nilva',
+            title: 'Development Team Lead at Nilva',
             event: 'Nilva · 2023 – Present',
             description:
-              'Leading a cross-functional team of 3 developers: code reviews, architecture decisions, and helping each developer level up while we ship enterprise-level products.',
+              'Leading a team of 4 developers: code reviews, architecture decisions, and helping each developer level up while we ship enterprise-level products.',
             cta: 'See my work history',
             href: '/about',
           },
