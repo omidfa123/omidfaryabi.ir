@@ -32,7 +32,7 @@ export async function GET(req: Request) {
   })
 
   for (let { slug } of await getAllArticles('fa')) {
-    let url = String(new URL(`/articles/${slug}`, req.url))
+    let url = String(new URL(`/articles/${slug}`, siteUrl))
     let html = await (await fetch(url)).text()
     let $ = cheerio.load(html)
 
