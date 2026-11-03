@@ -4,6 +4,10 @@ import { Feed } from 'feed'
 
 import { getAllArticles } from '@/lib/articles'
 
+// Build the feed per request. It fetches the article pages from the live site, so it can't be
+// generated at build time (the new pages aren't deployed yet).
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: Request) {
   let siteUrl = process.env.NEXT_PUBLIC_SITE_URL
 
