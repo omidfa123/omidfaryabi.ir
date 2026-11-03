@@ -2,6 +2,8 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
+# Build tools in case better-sqlite3 has no prebuilt binary for this Node/musl
+RUN apk add --no-cache python3 make g++
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY . .
@@ -18,6 +20,10 @@ COPY --from=build --chown=node:node /app/.next/static ./.next/static
 COPY --from=build --chown=node:node /app/public ./public
 # src/lib/articles.ts lists articles from this folder at runtime (feed.xml)
 COPY --from=build --chown=node:node /app/src/articles ./src/articles
+# Newsletter subscribers (SQLite). Mount a volume here to keep them across updates.
+RUN mkdir /data && chown node:node /data
+ENV SUBSCRIBERS_DB=/data/subscribers.db
+VOLUME /data
 USER node
 EXPOSE 3000
 CMD ["node", "server.js"]

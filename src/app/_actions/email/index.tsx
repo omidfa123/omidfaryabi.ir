@@ -1,6 +1,5 @@
 'use server'
 
-import { sql } from '@vercel/postgres'
 import {
   Html,
   Head,
@@ -13,6 +12,7 @@ import {
 import { render } from '@react-email/render'
 import nodemailer from 'nodemailer'
 import { FormState, NewsletterFormSchema } from '@/lib/definitions'
+import { addSubscriber } from '@/lib/subscribers'
 import { redirect } from 'next/navigation'
 import { type Locale, getDictionary, isLocale, localizePath } from '@/i18n'
 
@@ -138,24 +138,14 @@ export async function SendEmailAction(state: FormState, formData: FormData) {
     if (!validatedFields.success) {
       return { errors: { email: [errors.invalid] } }
     }
-    // Check if email already exists
-
-    const { rows } = await sql`
-      SELECT * FROM subscribers WHERE email = ${email.toString()}
-    `
-
-    if (rows.length > 0) {
+    // Save the subscriber; false means the email is already on the list
+    if (!addSubscriber(validatedFields.data.email, lang)) {
       return { errors: { email: [errors.exists] } }
     }
 
-    // Insert new subscriber
-    await sql`
-      INSERT INTO subscribers (email) VALUES (${email.toString()})
-    `
-
-    // Send welcome email (implement this function)
-    await sendWelcomeEmail(email.toString(), lang)
+    await sendWelcomeEmail(validatedFields.data.email, lang)
   } catch (error) {
+    console.error('Newsletter signup failed:', error)
     return { errors: { email: [errors.server] } }
   }
   return redirect(localizePath(lang, '/thank-you'))

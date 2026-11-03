@@ -5,6 +5,10 @@ import remarkGfm from 'remark-gfm'
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: 'standalone',
+  // Native SQLite module: keep it out of the webpack bundle (src/lib/subscribers.ts)
+  experimental: {
+    serverComponentsExternalPackages: ['better-sqlite3'],
+  },
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'mdx'],
   typescript: {
     ignoreBuildErrors: true,
