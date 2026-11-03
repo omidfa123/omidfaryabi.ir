@@ -5,6 +5,8 @@ import Image, { type StaticImageData } from 'next/image'
 import Link from 'next/link'
 import clsx from 'clsx'
 
+import { useI18n } from '@/i18n/I18nProvider'
+
 interface TouchScrollGalleryProps {
   images: StaticImageData[]
   projectLinks: string[]
@@ -18,6 +20,7 @@ export function TouchScrollGallery({
   projectNames,
   rotations,
 }: TouchScrollGalleryProps) {
+  const { dict } = useI18n()
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [startX, setStartX] = useState(0)
@@ -105,7 +108,7 @@ export function TouchScrollGallery({
   }
 
   return (
-    <div className="mt-16 sm:mt-20">
+    <div className="mt-16 sm:mt-20" dir="ltr">
       {/* Mobile/Touch optimized gallery */}
       <div className="sm:hidden">
         <div
@@ -155,8 +158,8 @@ export function TouchScrollGallery({
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                 <div className="text-center">
                   <div className="bg-white/90 dark:bg-zinc-800/90 px-4 py-2 rounded-lg shadow-lg backdrop-blur-sm border border-white/20 dark:border-zinc-700/50">
-                    <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Visit Website</p>
-                    <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">Click to open</p>
+                    <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{dict.home.gallery.visit}</p>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{dict.home.gallery.open}</p>
                   </div>
                 </div>
               </div>
@@ -173,10 +176,10 @@ export function TouchScrollGallery({
               className={clsx(
                 'w-2 h-2 rounded-full transition-all duration-300',
                 index === currentIndex
-                  ? 'bg-teal-500 dark:bg-teal-400 w-8'
+                  ? 'bg-accent-500 dark:bg-accent-400 w-8'
                   : 'bg-zinc-300 dark:bg-zinc-600 hover:bg-zinc-400 dark:hover:bg-zinc-500'
               )}
-              aria-label={`Go to image ${index + 1}`}
+              aria-label={dict.home.gallery.goTo.replace('{n}', String(index + 1))}
             />
           ))}
         </div>
@@ -192,7 +195,7 @@ export function TouchScrollGallery({
               target="_blank"
               rel="noopener noreferrer"
               className={clsx(
-                'group relative aspect-[9/10] w-44 flex-none overflow-hidden rounded-xl bg-zinc-100 sm:w-72 sm:rounded-2xl dark:bg-zinc-800 transition-all duration-300 hover:scale-105 hover:shadow-xl cursor-pointer',
+                'group relative aspect-[9/10] w-44 flex-none overflow-hidden rounded-xl bg-zinc-100 ring-1 ring-zinc-900/5 sm:w-72 sm:rounded-2xl dark:bg-zinc-800 dark:ring-white/10 transition-all duration-500 hover:z-10 hover:rotate-0 hover:scale-105 hover:shadow-2xl hover:shadow-accent-500/20 cursor-pointer',
                 rotations[imageIndex % rotations.length],
               )}
               title={projectNames[imageIndex]}
@@ -209,8 +212,8 @@ export function TouchScrollGallery({
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                 <div className="text-center">
                   <div className="bg-white/90 dark:bg-zinc-800/90 px-4 py-2 rounded-lg shadow-lg backdrop-blur-sm border border-white/20 dark:border-zinc-700/50">
-                    <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">Visit Website</p>
-                    <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">Click to open</p>
+                    <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">{dict.home.gallery.visit}</p>
+                    <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{dict.home.gallery.open}</p>
                   </div>
                 </div>
               </div>

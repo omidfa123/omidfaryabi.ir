@@ -1,42 +1,34 @@
-# Spotlight
+# omidfaryabi.ir
 
-Spotlight is a [Tailwind UI](https://tailwindui.com) site template built using [Tailwind CSS](https://tailwindcss.com) and [Next.js](https://nextjs.org).
+Personal website of Omid Faryabi, Frontend Developer & Technical Team Lead.
+Built with Next.js 14 (App Router), Tailwind CSS and MDX.
 
-## Getting started
+## Languages
 
-To get started with this template, first install the npm dependencies:
+- **Persian (default, RTL)**: served at the root: `/`, `/about`, `/articles/...`
+- **English**: served under `/en`: `/en`, `/en/about`, ...
+
+`src/middleware.ts` rewrites root URLs to the `[lang]` segment. All page copy
+lives in `src/i18n/dictionaries/fa.ts` and `en.ts`.
+
+## Articles
+
+Each article is a folder in `src/articles/<slug>/` with one MDX file per
+language (`fa.mdx`, `en.mdx`). Each file exports an `article` object with
+`title`, `description`, `author` and `date`.
+
+## Font
+
+The site uses **IRANSans DN** (`src/fonts/`). It is a commercial font from
+fontiran.com; see `src/fonts/FontLicense.txt`.
+
+## Development
 
 ```bash
 npm install
-```
-
-Next, create a `.env.local` file in the root of your project and set the `NEXT_PUBLIC_SITE_URL` variable to your site's public URL:
-
-```
-NEXT_PUBLIC_SITE_URL=https://example.com
-```
-
-Next, run the development server:
-
-```bash
 npm run dev
 ```
 
-Finally, open [http://localhost:3000](http://localhost:3000) in your browser to view the website.
-
-## Customizing
-
-You can start editing this template by modifying the files in the `/src` folder. The site will auto-update as you edit these files.
-
-## License
-
-This site template is a commercial product and is licensed under the [Tailwind UI license](https://tailwindui.com/license).
-
-## Learn more
-
-To learn more about the technologies used in this site template, see the following resources:
-
-- [Tailwind CSS](https://tailwindcss.com/docs) - the official Tailwind CSS documentation
-- [Next.js](https://nextjs.org/docs) - the official Next.js documentation
-- [Headless UI](https://headlessui.dev) - the official Headless UI documentation
-- [MDX](https://mdxjs.com) - the MDX documentation
+Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SITE_URL`. The
+newsletter also needs `GMAIL_USER`, `GMAIL_APP_PASSWORD` and a Vercel Postgres
+connection.

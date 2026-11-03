@@ -15,6 +15,8 @@ import clsx from 'clsx'
 
 import { Container } from '@/components/Container'
 import avatarImage from '@/images/avatar.jpg'
+import { localizePath, stripLocale } from '@/i18n/config'
+import { useI18n } from '@/i18n/I18nProvider'
 
 function CloseIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (
@@ -96,11 +98,13 @@ function MobileNavItem({
 function MobileNavigation(
   props: React.ComponentPropsWithoutRef<typeof Popover>,
 ) {
+  let { dict, href } = useI18n()
+
   return (
     <Popover {...props}>
       <PopoverButton className="group flex items-center rounded-full bg-white/90 px-4 py-2 text-sm font-medium text-zinc-800 shadow-lg shadow-zinc-800/5 ring-1 ring-zinc-900/5 backdrop-blur dark:bg-zinc-800/90 dark:text-zinc-200 dark:ring-white/10 dark:hover:ring-white/20">
-        Menu
-        <ChevronDownIcon className="ml-3 h-auto w-2 stroke-zinc-500 group-hover:stroke-zinc-700 dark:group-hover:stroke-zinc-400" />
+        {dict.nav.menu}
+        <ChevronDownIcon className="ms-3 h-auto w-2 stroke-zinc-500 group-hover:stroke-zinc-700 dark:group-hover:stroke-zinc-400" />
       </PopoverButton>
       <PopoverBackdrop
         transition
@@ -112,20 +116,20 @@ function MobileNavigation(
         className="fixed inset-x-4 top-8 z-50 origin-top rounded-3xl bg-white p-8 ring-1 ring-zinc-900/5 duration-150 data-[closed]:scale-95 data-[closed]:opacity-0 data-[enter]:ease-out data-[leave]:ease-in dark:bg-zinc-900 dark:ring-zinc-800"
       >
         <div className="flex flex-row-reverse items-center justify-between">
-          <PopoverButton aria-label="Close menu" className="-m-1 p-1">
+          <PopoverButton aria-label={dict.nav.closeMenu} className="-m-1 p-1">
             <CloseIcon className="h-6 w-6 text-zinc-500 dark:text-zinc-400" />
           </PopoverButton>
           <h2 className="text-sm font-medium text-zinc-600 dark:text-zinc-400">
-            Navigation
+            {dict.nav.navigation}
           </h2>
         </div>
         <nav className="mt-6">
           <ul className="-my-2 divide-y divide-zinc-100 text-base text-zinc-800 dark:divide-zinc-100/5 dark:text-zinc-300">
-            <MobileNavItem href="/about">About</MobileNavItem>
-            <MobileNavItem href="/projects">Projects</MobileNavItem>
-            <MobileNavItem href="/articles">Blog</MobileNavItem>
-            {/* <MobileNavItem href="/speaking">Speaking</MobileNavItem> */}
-            <MobileNavItem href="/uses">Tech Stack</MobileNavItem>
+            <MobileNavItem href={href('/about')}>{dict.nav.about}</MobileNavItem>
+            <MobileNavItem href={href('/projects')}>{dict.nav.projects}</MobileNavItem>
+            <MobileNavItem href={href('/articles')}>{dict.nav.articles}</MobileNavItem>
+            <MobileNavItem href={href('/uses')}>{dict.nav.uses}</MobileNavItem>
+            <MobileNavItem href={href('/mentoring')}>{dict.nav.mentoring}</MobileNavItem>
           </ul>
         </nav>
       </PopoverPanel>
@@ -140,22 +144,24 @@ function NavItem({
   href: string
   children: React.ReactNode
 }) {
-  let isActive = usePathname() === href
+  // Persian pages are prerendered as `/fa/...` but served as `/...`, so compare
+  // without the locale prefix to keep server and client output identical.
+  let isActive = stripLocale(usePathname()) === stripLocale(href)
 
   return (
     <li>
       <Link
         href={href}
         className={clsx(
-          'relative block px-3 py-2 transition',
+          'relative block whitespace-nowrap px-3 py-2 transition',
           isActive
-            ? 'text-teal-500 dark:text-teal-400'
-            : 'hover:text-teal-500 dark:hover:text-teal-400',
+            ? 'text-accent-500 dark:text-accent-400'
+            : 'hover:text-accent-500 dark:hover:text-accent-400',
         )}
       >
         {children}
         {isActive && (
-          <span className="absolute inset-x-1 -bottom-px h-px bg-gradient-to-r from-teal-500/0 via-teal-500/40 to-teal-500/0 dark:from-teal-400/0 dark:via-teal-400/40 dark:to-teal-400/0" />
+          <span className="absolute inset-x-1 -bottom-px h-px bg-gradient-to-r from-accent-500/0 via-accent-500/40 to-accent-500/0 dark:from-accent-400/0 dark:via-accent-400/40 dark:to-accent-400/0" />
         )}
       </Link>
     </li>
@@ -163,20 +169,23 @@ function NavItem({
 }
 
 function DesktopNavigation(props: React.ComponentPropsWithoutRef<'nav'>) {
+  let { dict, href } = useI18n()
+
   return (
     <nav {...props}>
-      <ul className="flex rounded-full bg-white/90 px-3 text-sm font-medium text-zinc-800 shadow-lg shadow-zinc-800/5 ring-1 ring-zinc-900/5 backdrop-blur dark:bg-zinc-800/90 dark:text-zinc-200 dark:ring-white/10">
-        <NavItem href="/about">About</NavItem>
-        <NavItem href="/projects">Projects</NavItem>
-        <NavItem href="/articles">Blog</NavItem>
-        {/* <NavItem href="/speaking">Speaking</NavItem> */}
-        <NavItem href="/uses">Tech Stack</NavItem>
+      <ul className="flex rounded-full bg-white/90 px-3 text-sm font-medium text-zinc-800 shadow-lg shadow-zinc-800/5 ring-1 ring-zinc-900/5 backdrop-blur dark:bg-zinc-900/70 dark:text-zinc-200 dark:ring-white/10">
+        <NavItem href={href('/about')}>{dict.nav.about}</NavItem>
+        <NavItem href={href('/projects')}>{dict.nav.projects}</NavItem>
+        <NavItem href={href('/articles')}>{dict.nav.articles}</NavItem>
+        <NavItem href={href('/uses')}>{dict.nav.uses}</NavItem>
+        <NavItem href={href('/mentoring')}>{dict.nav.mentoring}</NavItem>
       </ul>
     </nav>
   )
 }
 
 function ThemeToggle() {
+  let { dict } = useI18n()
   let { resolvedTheme, setTheme } = useTheme()
   let otherTheme = resolvedTheme === 'dark' ? 'light' : 'dark'
   let [mounted, setMounted] = useState(false)
@@ -188,13 +197,38 @@ function ThemeToggle() {
   return (
     <button
       type="button"
-      aria-label={mounted ? `Switch to ${otherTheme} theme` : 'Toggle theme'}
+      aria-label={
+        mounted
+          ? otherTheme === 'dark'
+            ? dict.nav.switchToDark
+            : dict.nav.switchToLight
+          : dict.nav.toggleTheme
+      }
       className="group rounded-full bg-white/90 px-3 py-2 shadow-lg shadow-zinc-800/5 ring-1 ring-zinc-900/5 backdrop-blur transition dark:bg-zinc-800/90 dark:ring-white/10 dark:hover:ring-white/20"
       onClick={() => setTheme(otherTheme)}
     >
-      <SunIcon className="h-6 w-6 fill-zinc-100 stroke-zinc-500 transition group-hover:fill-zinc-200 group-hover:stroke-zinc-700 dark:hidden [@media(prefers-color-scheme:dark)]:fill-teal-50 [@media(prefers-color-scheme:dark)]:stroke-teal-500 [@media(prefers-color-scheme:dark)]:group-hover:fill-teal-50 [@media(prefers-color-scheme:dark)]:group-hover:stroke-teal-600" />
-      <MoonIcon className="hidden h-6 w-6 fill-zinc-700 stroke-zinc-500 transition dark:block [@media(prefers-color-scheme:dark)]:group-hover:stroke-zinc-400 [@media_not_(prefers-color-scheme:dark)]:fill-teal-400/10 [@media_not_(prefers-color-scheme:dark)]:stroke-teal-500" />
+      <SunIcon className="h-6 w-6 fill-zinc-100 stroke-zinc-500 transition group-hover:fill-zinc-200 group-hover:stroke-zinc-700 dark:hidden [@media(prefers-color-scheme:dark)]:fill-accent-50 [@media(prefers-color-scheme:dark)]:stroke-accent-500 [@media(prefers-color-scheme:dark)]:group-hover:fill-accent-50 [@media(prefers-color-scheme:dark)]:group-hover:stroke-accent-600" />
+      <MoonIcon className="hidden h-6 w-6 fill-zinc-700 stroke-zinc-500 transition dark:block [@media(prefers-color-scheme:dark)]:group-hover:stroke-zinc-400 [@media_not_(prefers-color-scheme:dark)]:fill-accent-400/10 [@media_not_(prefers-color-scheme:dark)]:stroke-accent-500" />
     </button>
+  )
+}
+
+function LanguageToggle() {
+  let { lang, dict } = useI18n()
+  let pathname = stripLocale(usePathname())
+  let target = localizePath(lang === 'fa' ? 'en' : 'fa', pathname)
+
+  return (
+    <Link
+      href={target}
+      hrefLang={lang === 'fa' ? 'en' : 'fa'}
+      aria-label={dict.nav.otherLanguageLabel}
+      className="flex h-10 min-w-10 items-center justify-center rounded-full bg-white/90 px-3 text-sm font-bold text-zinc-700 shadow-lg shadow-zinc-800/5 ring-1 ring-zinc-900/5 backdrop-blur transition hover:text-accent-500 dark:bg-zinc-800/90 dark:text-zinc-200 dark:ring-white/10 dark:hover:text-accent-400 dark:hover:ring-white/20"
+    >
+      <span className={lang === 'fa' ? 'font-en' : 'font-fa'}>
+        {dict.nav.otherLanguage}
+      </span>
+    </Link>
   )
 }
 
@@ -226,10 +260,12 @@ function Avatar({
 }: Omit<React.ComponentPropsWithoutRef<typeof Link>, 'href'> & {
   large?: boolean
 }) {
+  let { dict, href } = useI18n()
+
   return (
     <Link
-      href="/"
-      aria-label="Home"
+      href={href('/')}
+      aria-label={dict.nav.home}
       className={clsx(className, 'pointer-events-auto')}
       {...props}
     >
@@ -248,7 +284,7 @@ function Avatar({
 }
 
 export function Header() {
-  let isHomePage = usePathname() === '/'
+  let isHomePage = stripLocale(usePathname()) === '/'
 
   let headerRef = useRef<React.ElementRef<'div'>>(null)
   let avatarRef = useRef<React.ElementRef<'div'>>(null)
@@ -324,6 +360,7 @@ export function Header() {
 
       let x = (scrollY * (fromX - toX)) / downDelay + toX
       x = clamp(x, fromX, toX)
+      if (document.documentElement.dir === 'rtl') x = -x
 
       setProperty(
         '--avatar-image-transform',
@@ -331,7 +368,8 @@ export function Header() {
       )
 
       let borderScale = 1 / (toScale / scale)
-      let borderX = (-toX + x) * borderScale
+      let direction = document.documentElement.dir === 'rtl' ? -1 : 1
+      let borderX = (-toX * direction + x) * borderScale
       let borderTransform = `translate3d(${borderX}rem, 0, 0) scale(${borderScale})`
 
       setProperty('--avatar-border-transform', borderTransform)
@@ -385,7 +423,7 @@ export function Header() {
               >
                 <div className="relative">
                   <AvatarContainer
-                    className="absolute left-0 top-3 origin-left transition-opacity"
+                    className="absolute start-0 top-3 origin-left transition-opacity rtl:origin-right"
                     style={{
                       opacity: 'var(--avatar-border-opacity, 0)',
                       transform: 'var(--avatar-border-transform)',
@@ -393,7 +431,7 @@ export function Header() {
                   />
                   <Avatar
                     large
-                    className="block h-16 w-16 origin-left"
+                    className="block h-16 w-16 origin-left rtl:origin-right"
                     style={{ transform: 'var(--avatar-image-transform)' }}
                   />
                 </div>
@@ -429,7 +467,8 @@ export function Header() {
                 <DesktopNavigation className="pointer-events-auto hidden md:block" />
               </div>
               <div className="flex justify-end md:flex-1">
-                <div className="pointer-events-auto">
+                <div className="pointer-events-auto flex items-center gap-2">
+                  <LanguageToggle />
                   <ThemeToggle />
                 </div>
               </div>

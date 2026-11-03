@@ -14,40 +14,87 @@ import { render } from '@react-email/render'
 import nodemailer from 'nodemailer'
 import { FormState, NewsletterFormSchema } from '@/lib/definitions'
 import { redirect } from 'next/navigation'
+import { type Locale, getDictionary, isLocale, localizePath } from '@/i18n'
 
-const WelcomeEmail = ({ recipientEmail }: { recipientEmail: string }) => (
-  <Html>
-    <Head />
-    <Body style={{ fontFamily: 'Arial, sans-serif', color: '#333' }}>
-      <Container>
-        <Section>
-          <Text>Welcome to Our Newsletter!</Text>
-          <Text>
-            Thank you for subscribing, {recipientEmail}. We&apos;re excited to
-            have you on board!
-          </Text>
-          <Text>Here&apos;s what you can expect:</Text>
-          <ul>
-            <li>Regular updates on new articles and blog posts</li>
-            <li>Exclusive content for subscribers</li>
-            <li>Tips and insights in your area of interest</li>
-          </ul>
-          <Button
-            href="https://omidfaryabi.ir/articles"
-            style={{
-              background: '#007bff',
-              color: '#fff',
-              padding: '10px 20px',
-              textDecoration: 'none',
-            }}
-          >
-            Check Out Our Latest Content
-          </Button>
-        </Section>
-      </Container>
-    </Body>
-  </Html>
-)
+const welcomeCopy = {
+  fa: {
+    subject: 'به خبرنامه امید فاریابی خوش آمدید!',
+    heading: 'به خبرنامه من خوش آمدید! 👋',
+    thanks: (email: string) =>
+      `ممنون که عضو شدید (${email}). خوشحالم که همراه من هستید.`,
+    expect: 'چه چیزهایی دریافت می‌کنید:',
+    items: [
+      'مقاله‌های تازه درباره React، Next.js و مهندسی فرانت‌اند',
+      'نکته‌ها و تجربه‌های پروژه‌های واقعی',
+      'خبر پروژه‌ها و رویدادهای جدید',
+    ],
+    button: 'خواندن تازه‌ترین مقاله‌ها',
+    path: '/articles',
+  },
+  en: {
+    subject: "Welcome to Omid Faryabi's newsletter!",
+    heading: 'Welcome to my newsletter! 👋',
+    thanks: (email: string) =>
+      `Thanks for subscribing, ${email}. I'm glad to have you on board!`,
+    expect: "Here's what you can expect:",
+    items: [
+      'New articles on React, Next.js and frontend engineering',
+      'Tips and lessons from real-world projects',
+      'News about new projects and events',
+    ],
+    button: 'Read the latest articles',
+    path: '/en/articles',
+  },
+}
+
+const WelcomeEmail = ({
+  recipientEmail,
+  lang,
+}: {
+  recipientEmail: string
+  lang: Locale
+}) => {
+  let copy = welcomeCopy[lang]
+  let rtl = lang === 'fa'
+
+  return (
+    <Html lang={lang} dir={rtl ? 'rtl' : 'ltr'}>
+      <Head />
+      <Body
+        style={{
+          fontFamily: rtl ? 'Tahoma, Arial, sans-serif' : 'Arial, sans-serif',
+          color: '#333',
+          direction: rtl ? 'rtl' : 'ltr',
+        }}
+      >
+        <Container>
+          <Section>
+            <Text>{copy.heading}</Text>
+            <Text>{copy.thanks(recipientEmail)}</Text>
+            <Text>{copy.expect}</Text>
+            <ul>
+              {copy.items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+            <Button
+              href={`https://omidfaryabi.ir${copy.path}`}
+              style={{
+                background: '#7c3aed',
+                color: '#fff',
+                padding: '10px 20px',
+                borderRadius: '6px',
+                textDecoration: 'none',
+              }}
+            >
+              {copy.button}
+            </Button>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -56,14 +103,14 @@ const transporter = nodemailer.createTransport({
     pass: process.env.GMAIL_APP_PASSWORD,
   },
 })
-async function sendWelcomeEmail(email: string) {
-  const emailHtml = render(<WelcomeEmail recipientEmail={email} />)
+async function sendWelcomeEmail(email: string, lang: Locale) {
+  const emailHtml = render(<WelcomeEmail recipientEmail={email} lang={lang} />)
 
   try {
     const info = await transporter.sendMail({
-      from: '"Omid Faryabi" omidfaryabi@gmail.com',
+      from: `"Omid Faryabi" <${process.env.GMAIL_USER}>`,
       to: email,
-      subject: 'Welcome to Our Newsletter!',
+      subject: welcomeCopy[lang].subject,
       html: await emailHtml,
     })
 
@@ -74,20 +121,22 @@ async function sendWelcomeEmail(email: string) {
   }
 }
 export async function SendEmailAction(state: FormState, formData: FormData) {
+  const langValue = String(formData.get('lang') ?? '')
+  const lang = isLocale(langValue) ? langValue : 'fa'
+  const { errors } = getDictionary(lang).newsletter
+
   try {
     const email = formData.get('email')
 
     if (!email) {
-      return { errors: { email: ['Please enter your email address'] } }
+      return { errors: { email: [errors.empty] } }
     }
 
     const validatedFields = NewsletterFormSchema.safeParse({
       email: formData.get('email'),
     })
     if (!validatedFields.success) {
-      return {
-        errors: validatedFields.error.flatten().fieldErrors,
-      }
+      return { errors: { email: [errors.invalid] } }
     }
     // Check if email already exists
 
@@ -96,7 +145,7 @@ export async function SendEmailAction(state: FormState, formData: FormData) {
     `
 
     if (rows.length > 0) {
-      return { errors: { email: ['Email already subscribed'] } }
+      return { errors: { email: [errors.exists] } }
     }
 
     // Insert new subscriber
@@ -105,9 +154,9 @@ export async function SendEmailAction(state: FormState, formData: FormData) {
     `
 
     // Send welcome email (implement this function)
-    await sendWelcomeEmail(email.toString())
+    await sendWelcomeEmail(email.toString(), lang)
   } catch (error) {
-    return { message: 'Internal server error' }
+    return { errors: { email: [errors.server] } }
   }
-  return redirect('/thank-you')
+  return redirect(localizePath(lang, '/thank-you'))
 }

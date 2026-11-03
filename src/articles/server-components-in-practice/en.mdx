@@ -1,0 +1,177 @@
+export const article = {
+  author: 'Omid Faryabi',
+  date: '2026-11-03',
+  title: 'Server Components in Next.js: A Practical Guide for Real Projects',
+  description:
+    'Server Components changed how we build React apps. With real examples, this guide shows where to use server and client components, how to fetch data, and which mistakes to avoid.',
+}
+
+When I first moved a large project to the App Router and Server Components, the hardest part wasn't learning a new API. It was **changing how I think**. For years we were used to running everything in the browser: fetch data in `useEffect`, lift state up, and treat every page as a full client-side app.
+
+Server Components flip that default. In this article I've collected the patterns that have actually helped me in practice, so your path can be shorter.
+
+## What exactly is a Server Component?
+
+In the App Router, **every component is a Server Component by default.** That means it:
+
+- runs only on the server, and its code is never sent to the browser;
+- can be `async` and fetch data directly;
+- has access to server-side resources such as databases, the file system, and secret keys;
+- **cannot** use `useState`, `useEffect`, or event handlers like `onClick`.
+
+The result: less JavaScript reaches the user, and the page becomes usable sooner.
+
+```tsx
+// app/products/page.tsx — a Server Component
+export default async function ProductsPage() {
+  let products = await db.product.findMany()
+
+  return (
+    <ul>
+      {products.map((product) => (
+        <li key={product.id}>{product.name}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+No `useEffect`, no loading state, no separate API endpoint. The component fetches the data and renders the HTML.
+
+## The server–client boundary: `'use client'`
+
+Wherever you need interactivity (state, events, or browser APIs) you need a **Client Component**. Just make this the first line of the file:
+
+```tsx
+'use client'
+
+import { useState } from 'react'
+
+export function LikeButton({ initialLikes }: { initialLikes: number }) {
+  let [likes, setLikes] = useState(initialLikes)
+
+  return (
+    <button onClick={() => setLikes(likes + 1)}>
+      ❤️ {likes}
+    </button>
+  )
+}
+```
+
+The key point: `'use client'` defines a **boundary**, not just a label on one file. Everything that file imports ends up in the client bundle too, so where you put the boundary matters a lot.
+
+## Pattern 1: Push client components down to the leaves
+
+The most common mistake I see is marking a whole page `'use client'` just because one button needs `onClick`. Instead, make **only the interactive part** a client component:
+
+```tsx
+// ❌ The whole page runs on the client
+'use client'
+export default function ProductPage() { /* ... */ }
+
+// ✅ The page stays on the server; only the button is client-side
+import { LikeButton } from './LikeButton'
+
+export default async function ProductPage({ params }) {
+  let product = await getProduct(params.id)
+
+  return (
+    <article>
+      <h1>{product.name}</h1>
+      <p>{product.description}</p>
+      <LikeButton initialLikes={product.likes} />
+    </article>
+  )
+}
+```
+
+The smaller your Client Components are, and the lower they sit in the tree, the smaller your JavaScript bundle.
+
+## Pattern 2: Pass Server Components through `children`
+
+A Client Component can't **import** a Server Component, but it can **receive** one as `children` or as a prop. This works beautifully for modals, tabs, and providers:
+
+```tsx
+// Tabs.tsx
+'use client'
+
+import { useState } from 'react'
+
+export function Tabs({ children }: { children: React.ReactNode }) {
+  let [open, setOpen] = useState(true)
+  return (
+    <div>
+      <button onClick={() => setOpen(!open)}>Show / hide</button>
+      {open && children}
+    </div>
+  )
+}
+
+// page.tsx — a Server Component
+<Tabs>
+  <HeavyServerReport /> {/* still rendered on the server */}
+</Tabs>
+```
+
+## Pattern 3: Stream with Suspense
+
+Users don't have to wait for your slowest request. Wrap the slow parts in `Suspense` so the rest of the page shows up right away:
+
+```tsx
+import { Suspense } from 'react'
+
+export default function Dashboard() {
+  return (
+    <>
+      <Header />
+      <Suspense fallback={<ChartSkeleton />}>
+        <SalesChart /> {/* a slow async component */}
+      </Suspense>
+    </>
+  )
+}
+```
+
+You can also add a `loading.tsx` file for a whole route; Next.js wraps the page in a Suspense boundary for you.
+
+## Caching and revalidation
+
+In Next.js 14, `fetch` requests are cached by default. To control that:
+
+```tsx
+// Refresh the data at most every 60 seconds
+await fetch(url, { next: { revalidate: 60 } })
+
+// Never cache
+await fetch(url, { cache: 'no-store' })
+```
+
+Keep in mind that this default changed in Next.js 15, where `fetch` is no longer cached automatically. Check your project's caching behavior before you upgrade.
+
+## Common mistakes
+
+**1. Passing non-serializable data.** Props that go from the server to the client must be serializable to JSON. You can't pass functions, classes, or special instances directly.
+
+**2. Leaking server code to the client.** If a module holds secret keys or a database connection, add this at the top so the build fails if it is ever imported on the client by mistake:
+
+```ts
+import 'server-only'
+```
+
+**3. Context in a Server Component.** `createContext` only works in Client Components. Put your providers in a separate `'use client'` file and use it from your layout.
+
+**4. `useEffect` for data fetching.** If the data can be fetched on the server, fetch it there. Save `useEffect` for things that truly depend on the browser.
+
+## A quick checklist
+
+Before writing any component, ask yourself:
+
+- Does it need state, events, or browser APIs? → **Client Component**
+- Does it fetch data or only display content? → **Server Component**
+- Is only a small part of it interactive? → Split that part out and make it client-side.
+
+## Wrapping up
+
+Server Components aren't just a new feature; they're a new way of thinking about React applications. My rule is simple: **everything on the server, unless there's a good reason for it to be on the client.** That one rule gives you smaller bundles, faster pages, and simpler code.
+
+If you have questions or a different experience, I'd love to hear from you on [LinkedIn](https://www.linkedin.com/in/omid-faryabi-7b275823a/) or [Telegram](https://t.me/omidfa123).

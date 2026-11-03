@@ -1,0 +1,177 @@
+export const article = {
+  author: 'امید فاریابی',
+  date: '2026-11-03',
+  title: 'Server Components در Next.js؛ راهنمای عملی برای پروژه‌های واقعی',
+  description:
+    'Server Components نحوه ساختن اپلیکیشن‌های React را عوض کرده‌اند. در این مقاله با مثال‌های واقعی می‌بینیم کجا از کامپوننت سرور و کجا از کامپوننت کلاینت استفاده کنیم، چطور داده بگیریم و از چه اشتباه‌هایی دوری کنیم.',
+}
+
+وقتی برای اولین بار در یک پروژه بزرگ سراغ App Router و Server Components رفتم، بیشترین چالش یاد گرفتن API جدید نبود؛ چالش اصلی **عوض کردن طرز فکر** بود. سال‌ها عادت کرده بودیم همه چیز در مرورگر اجرا شود: داده را با `useEffect` بگیریم، state را بالا ببریم و هر صفحه را یک اپلیکیشن کامل سمت کلاینت ببینیم.
+
+Server Components این پیش‌فرض را برعکس می‌کنند. در این مقاله تجربه‌ها و الگوهایی را که در عمل به کارم آمده‌اند جمع کرده‌ام تا شما مسیر کوتاه‌تری داشته باشید.
+
+## Server Component دقیقاً چیست؟
+
+در App Router، **هر کامپوننت به‌طور پیش‌فرض یک Server Component است.** یعنی:
+
+- فقط روی سرور اجرا می‌شود و کد آن هرگز به مرورگر ارسال نمی‌شود.
+- می‌تواند `async` باشد و مستقیماً داده بگیرد.
+- به منابع سمت سرور مثل دیتابیس، فایل‌سیستم و کلیدهای مخفی دسترسی دارد.
+- **نمی‌تواند** از `useState`، `useEffect` یا رویدادهایی مثل `onClick` استفاده کند.
+
+نتیجه؟ جاوااسکریپت کمتری به کاربر می‌رسد و صفحه سریع‌تر قابل استفاده می‌شود.
+
+```tsx
+// app/products/page.tsx — یک Server Component
+export default async function ProductsPage() {
+  let products = await db.product.findMany()
+
+  return (
+    <ul>
+      {products.map((product) => (
+        <li key={product.id}>{product.name}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+نه `useEffect` داریم، نه state برای loading و نه endpoint جداگانه برای API. کامپوننت داده را می‌گیرد و HTML را می‌سازد.
+
+## مرز سرور و کلاینت: `'use client'`
+
+هر جا به تعامل نیاز داریم، یعنی state، رویداد یا APIهای مرورگر، باید یک **Client Component** بسازیم. کافی است اولین خط فایل این باشد:
+
+```tsx
+'use client'
+
+import { useState } from 'react'
+
+export function LikeButton({ initialLikes }: { initialLikes: number }) {
+  let [likes, setLikes] = useState(initialLikes)
+
+  return (
+    <button onClick={() => setLikes(likes + 1)}>
+      ❤️ {likes}
+    </button>
+  )
+}
+```
+
+نکته مهم: `'use client'` یک **مرز** تعریف می‌کند، نه فقط برچسب یک فایل. هر چیزی که این فایل import کند هم وارد باندل کلاینت می‌شود. پس جای این مرز اهمیت زیادی دارد.
+
+## الگوی ۱: کامپوننت‌های کلاینت را به برگ‌های درخت ببرید
+
+رایج‌ترین اشتباهی که می‌بینم این است که کل صفحه را `'use client'` می‌کنیم، فقط چون یک دکمه به `onClick` نیاز دارد. به جای آن، **فقط همان بخش تعاملی** را کلاینت کنید:
+
+```tsx
+// ❌ کل صفحه سمت کلاینت اجرا می‌شود
+'use client'
+export default function ProductPage() { /* ... */ }
+
+// ✅ صفحه روی سرور می‌ماند، فقط دکمه کلاینت است
+import { LikeButton } from './LikeButton'
+
+export default async function ProductPage({ params }) {
+  let product = await getProduct(params.id)
+
+  return (
+    <article>
+      <h1>{product.name}</h1>
+      <p>{product.description}</p>
+      <LikeButton initialLikes={product.likes} />
+    </article>
+  )
+}
+```
+
+هرچه Client Componentها کوچک‌تر و پایین‌تر در درخت باشند، باندل جاوااسکریپت کوچک‌تر می‌شود.
+
+## الگوی ۲: Server Component را از طریق `children` پاس بدهید
+
+یک Client Component نمی‌تواند یک Server Component را **import** کند، اما می‌تواند آن را به‌عنوان `children` یا prop **دریافت** کند. این الگو برای چیزهایی مثل Modal، Tabs یا Providerها فوق‌العاده است:
+
+```tsx
+// Tabs.tsx
+'use client'
+
+import { useState } from 'react'
+
+export function Tabs({ children }: { children: React.ReactNode }) {
+  let [open, setOpen] = useState(true)
+  return (
+    <div>
+      <button onClick={() => setOpen(!open)}>نمایش / پنهان</button>
+      {open && children}
+    </div>
+  )
+}
+
+// page.tsx — Server Component
+<Tabs>
+  <HeavyServerReport /> {/* همچنان روی سرور رندر می‌شود */}
+</Tabs>
+```
+
+## الگوی ۳: استریم با Suspense
+
+لازم نیست کاربر منتظر کندترین درخواست بماند. بخش‌های کند را داخل `Suspense` بگذارید تا بقیه صفحه فوراً نمایش داده شود:
+
+```tsx
+import { Suspense } from 'react'
+
+export default function Dashboard() {
+  return (
+    <>
+      <Header />
+      <Suspense fallback={<ChartSkeleton />}>
+        <SalesChart /> {/* یک کامپوننت async و کند */}
+      </Suspense>
+    </>
+  )
+}
+```
+
+برای کل یک مسیر هم می‌توانید فایل `loading.tsx` بسازید؛ Next.js آن را به‌طور خودکار دور صفحه در یک Suspense قرار می‌دهد.
+
+## کش و به‌روزرسانی داده
+
+در Next.js 14 درخواست‌های `fetch` به‌طور پیش‌فرض کش می‌شوند. برای کنترل این رفتار:
+
+```tsx
+// هر ۶۰ ثانیه یک‌بار داده تازه شود
+await fetch(url, { next: { revalidate: 60 } })
+
+// هیچ‌وقت کش نشود
+await fetch(url, { cache: 'no-store' })
+```
+
+حواستان باشد که از Next.js 15 این پیش‌فرض عوض شده و `fetch` دیگر به‌طور خودکار کش نمی‌شود. قبل از ارتقا حتماً رفتار کش پروژه را بررسی کنید.
+
+## اشتباه‌های رایج
+
+**۱. پاس دادن داده غیرقابل‌سریال‌سازی.** propهایی که از سرور به کلاینت می‌روند باید قابل تبدیل به JSON باشند. تابع، کلاس و instanceهای خاص را نمی‌توانید مستقیم پاس بدهید.
+
+**۲. نشت کد سمت سرور به کلاینت.** اگر ماژولی کلید مخفی یا اتصال دیتابیس دارد، در ابتدایش این را اضافه کنید تا اگر اشتباهی در کلاینت import شد، build خطا بدهد:
+
+```ts
+import 'server-only'
+```
+
+**۳. Context در Server Component.** `createContext` فقط در Client Component کار می‌کند. Providerها را در یک فایل `'use client'` جدا بسازید و در layout از آن استفاده کنید.
+
+**۴. `useEffect` برای گرفتن داده.** اگر داده می‌تواند روی سرور گرفته شود، همان‌جا بگیرید. `useEffect` را برای چیزهایی نگه دارید که واقعاً به مرورگر وابسته‌اند.
+
+## چک‌لیست سریع
+
+قبل از نوشتن هر کامپوننت از خودتان بپرسید:
+
+- آیا به state، رویداد یا API مرورگر نیاز دارد؟ ← **Client Component**
+- آیا داده می‌گیرد یا فقط محتوا نمایش می‌دهد؟ ← **Server Component**
+- آیا فقط بخش کوچکی از آن تعاملی است؟ ← همان بخش را جدا و کلاینت کنید.
+
+## جمع‌بندی
+
+Server Components فقط یک قابلیت جدید نیستند؛ روشی تازه برای فکر کردن درباره اپلیکیشن‌های React‌اند. قاعده من ساده است: **همه چیز روی سرور، مگر اینکه دلیل خوبی برای کلاینت بودن داشته باشد.** با همین یک قاعده، باندل‌ها کوچک‌تر، صفحه‌ها سریع‌تر و کد ساده‌تر می‌شود.
+
+اگر سؤالی دارید یا تجربه‌ای متفاوت داشته‌اید، خوشحال می‌شوم در [لینکدین](https://www.linkedin.com/in/omid-faryabi-7b275823a/) یا [تلگرام](https://t.me/omidfa123) با من در میان بگذارید.

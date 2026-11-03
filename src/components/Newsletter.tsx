@@ -5,6 +5,8 @@ import { Button } from './Button'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
 
+import { useI18n } from '@/i18n/I18nProvider'
+
 const initialState = {
   message: '',
 }
@@ -58,16 +60,22 @@ function LoadingSpinner() {
   )
 }
 
-function NewsletterSubmitButton() {
+function NewsletterSubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus()
   return (
-    <Button type="submit" className="ml-4 flex items-center" disabled={pending}>
-      {pending ? <LoadingSpinner /> : 'Join'}
+    <Button
+      type="submit"
+      variant="gradient"
+      className="ms-4 flex items-center"
+      disabled={pending}
+    >
+      {pending ? <LoadingSpinner /> : label}
     </Button>
   )
 }
 
 export function Newsletter() {
+  const { lang, dict } = useI18n()
   const [state, formAction] = useFormState(SendEmailAction, initialState)
 
   useEffect(() => {
@@ -82,23 +90,26 @@ export function Newsletter() {
   return (
     <form
       action={formAction}
-      className="rounded-2xl border border-zinc-100 p-6 dark:border-zinc-700/40"
+      className="rounded-2xl border border-zinc-200/70 bg-white/60 p-6 backdrop-blur dark:border-white/10 dark:bg-zinc-900/40"
     >
       <h2 className="flex text-sm font-semibold text-zinc-900 dark:text-zinc-100">
         <MailIcon className="h-6 w-6 flex-none" />
-        <span className="ml-3">Tech Updates & Insights</span>
+        <span className="ms-3">{dict.newsletter.title}</span>
       </h2>
       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Get the latest updates on frontend technologies, React best practices, and development insights. Unsubscribe anytime.
+        {dict.newsletter.description}
       </p>
+      <input type="hidden" name="lang" value={lang} />
       <div className="mt-6 flex">
         <input
-          placeholder="Email address"
-          aria-label="Email address"
+          type="email"
+          dir="ltr"
+          placeholder={dict.newsletter.placeholder}
+          aria-label={dict.newsletter.placeholder}
           name="email"
-          className="min-w-0 flex-auto appearance-none rounded-md border border-zinc-900/10 bg-white px-3 py-[calc(theme(spacing.2)-1px)] shadow-md shadow-zinc-800/5 placeholder:text-zinc-400 focus:border-teal-500 focus:outline-none focus:ring-4 focus:ring-teal-500/10 sm:text-sm dark:border-zinc-700 dark:bg-zinc-700/[0.15] dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:focus:border-teal-400 dark:focus:ring-teal-400/10"
+          className="min-w-0 flex-auto appearance-none rounded-md border border-zinc-900/10 bg-white px-3 py-[calc(theme(spacing.2)-1px)] shadow-md shadow-zinc-800/5 placeholder:text-zinc-400 rtl:placeholder:text-right focus:border-accent-500 focus:outline-none focus:ring-4 focus:ring-accent-500/10 sm:text-sm dark:border-zinc-700 dark:bg-zinc-700/[0.15] dark:text-zinc-200 dark:placeholder:text-zinc-500 dark:focus:border-accent-400 dark:focus:ring-accent-400/10"
         />
-        <NewsletterSubmitButton />
+        <NewsletterSubmitButton label={dict.newsletter.join} />
       </div>
     </form>
   )

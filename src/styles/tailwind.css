@@ -3,6 +3,58 @@
 @import './prism.css';
 @import 'tailwindcss/utilities';
 
+html[lang='fa'] {
+  --font-active: var(--font-fa);
+}
+
+html[lang='en'] {
+  --font-active: var(--font-en);
+}
+
+/* Letter-spacing breaks the joins between Persian letters */
+[dir='rtl'] * {
+  letter-spacing: 0 !important;
+}
+
+/* Code always reads left-to-right, even inside Persian text */
+[dir='rtl'] pre,
+[dir='rtl'] code {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+[dir='rtl'] pre {
+  text-align: left;
+}
+
+[dir='rtl'] h1,
+[dir='rtl'] h2 {
+  line-height: 1.45;
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-accent-500 via-fuchsia-500 to-cyan-500 bg-[length:200%_auto] bg-clip-text text-transparent dark:from-accent-400 dark:via-fuchsia-400 dark:to-cyan-300;
+  }
+
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(113 113 122 / 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(113 113 122 / 0.1) 1px, transparent 1px);
+    background-size: 56px 56px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* Custom utilities for touch scroll gallery */
 .scrollbar-hide {
   -ms-overflow-style: none;  /* Internet Explorer 10+ */

@@ -2,6 +2,8 @@ import assert from 'assert'
 import * as cheerio from 'cheerio'
 import { Feed } from 'feed'
 
+import { getAllArticles } from '@/lib/articles'
+
 export async function GET(req: Request) {
   let siteUrl = process.env.NEXT_PUBLIC_SITE_URL
 
@@ -10,13 +12,14 @@ export async function GET(req: Request) {
   }
 
   let author = {
-    name: 'Omid Faryabi',
-    email: 'OmidFaryabi@gmail.com',
+    name: 'امید فاریابی (Omid Faryabi)',
+    email: 'omidfa1234@gmail.com',
   }
 
   let feed = new Feed({
     title: author.name,
-    description: 'Articles by Omid Faryabi',
+    description: 'نوشته‌های امید فاریابی درباره مهندسی فرانت‌اند',
+    language: 'fa',
     author,
     id: siteUrl,
     link: siteUrl,
@@ -28,18 +31,12 @@ export async function GET(req: Request) {
     },
   })
 
-  let articleIds = require
-    .context('../articles', true, /\/page\.mdx$/)
-    .keys()
-    .filter((key) => key.startsWith('./'))
-    .map((key) => key.slice(2).replace(/\/page\.mdx$/, ''))
-
-  for (let id of articleIds) {
-    let url = String(new URL(`/articles/${id}`, req.url))
+  for (let { slug } of await getAllArticles('fa')) {
+    let url = String(new URL(`/articles/${slug}`, req.url))
     let html = await (await fetch(url)).text()
     let $ = cheerio.load(html)
 
-    let publicUrl = `${siteUrl}/articles/${id}`
+    let publicUrl = `${siteUrl}/articles/${slug}`
     let article = $('article').first()
     let title = article.find('h1').first().text()
     let date = article.find('time').first().attr('datetime')
