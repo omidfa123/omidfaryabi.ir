@@ -5,6 +5,7 @@ import { Toaster } from 'sonner'
 
 import { Providers } from '@/app/providers'
 import { Layout } from '@/components/Layout'
+import { PersonJsonLd } from '@/components/PersonJsonLd'
 import {
   type Locale,
   getDictionary,
@@ -87,8 +88,9 @@ export function generateMetadata({
       title: meta.defaultTitle,
       description: meta.description,
     },
+    // Language alternates per page come from sitemap.xml; set here they'd point
+    // every page at the home page.
     alternates: {
-      languages: { 'fa-IR': '/', en: '/en' },
       types: {
         'application/rss+xml': `${siteUrl}/feed.xml`,
       },
@@ -114,6 +116,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="flex h-full bg-zinc-50 dark:bg-zinc-950">
+        <PersonJsonLd lang={lang} jobTitle={dict.home.roles[0].title} />
         <Toaster expand dir={getDirection(lang)} />
         <Providers>
           <I18nProvider lang={lang} dict={dict}>
